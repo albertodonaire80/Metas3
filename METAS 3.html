@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚀 METAS 🚀</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1043/1043444.png">
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF8C00; --secondary: #FFB347; --bg: #FFFDF5;
+            --card: #FFFFFF; --text: #5D4037; --accent: #A0522D;
+            --danger: #ef4444; --success: #22c55e;
+        }
+
+        /* Estilos Modo Oscuro */
+        body.dark-mode {
+            --bg: #1a1a1a; --card: #2d2d2d; --text: #f0f0f0;
+            --accent: #ffb347; --secondary: #4a4a4a;
+        }
+
+        body { 
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg); color: var(--text); margin: 0;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .safe-area { padding: env(safe-area-inset-top) 20px 100px 20px; max-width: 500px; margin: 0 auto; }
+        .header h1 { font-size: 32px; font-weight: 900; color: var(--primary); font-style: italic; text-align: center; margin: 10px 0; }
+
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+            display: flex; justify-content: space-around; padding: 15px 10px calc(15px + env(safe-area-inset-bottom));
+            border-top: 1px solid #eee; z-index: 100;
+        }
+        .tab-item { border: none; background: none; color: #999; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .tab-item.active { color: var(--primary); }
+
+        .card {
+            background: var(--card); border-radius: 25px; padding: 20px;
+            border: 2px solid var(--secondary); margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 2px solid #FFEBB7; box-sizing: border-box; font-size: 16px; outline: none; background: var(--card); color: var(--text); }
+
+        .goal-selector { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+        .goal-chip { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--secondary); background: var(--card); white-space: nowrap; font-weight: 600; color: var(--accent); }
+        .goal-chip.active { background: var(--primary); color: white; }
+
+        .avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-height: 180px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 15px; margin: 10px 0; }
+        .avatar-btn { font-size: 24px; border: 2px solid #eee; border-radius: 12px; background: white; cursor: pointer; padding: 5px; }
+        .avatar-btn.selected { border-color: var(--primary); background: #FFF4D1; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 14px; border-radius: 15px; font-weight: 800; border: none; color: white; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .btn-reset { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+
+        .bar-container { margin: 10px 0; }
+        .bar-bg { background: #FFF4D1; height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-fill { background: var(--primary); height: 100%; transition: width 0.5s; }
+
+        .medal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .medal-card { text-align: center; padding: 15px; border-radius: 20px; border: 2px solid #eee; transition: 0.3s; position: relative; overflow: hidden;}
+        
+        .medal-card.won { 
+            background: #FFF9E6; 
+            border-color: var(--secondary); 
+            animation: glowPulse 2s infinite ease-in-out;
+        }
+        body.dark-mode .medal-card.won { background: #3d3d3d; }
+
+        .floating-toast {
+            position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 15px 25px;
+            border-radius: 50px; font-weight: 900; z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: floatIn 3.5s forwards ease-in-out;
+            pointer-events: none; white-space: nowrap;
+        }
+
+        .next-medal-info {
+            background: var(--primary); color: white; padding: 10px; border-radius: 15px;
+            margin-bottom: 15px; font-size: 14px; text-align: center; font-weight: bold;
+        }
+
+        @keyframes floatIn {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            10% { opacity: 1; transform: translate(-50%, 0px); }
+            90% { opacity: 1; transform: translate(-50%, 0px); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px rgba(255,140,0,0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255,140,0,0.5); transform: scale(1.02); }
+            100% { box-shadow: 0 0 5px rgba(255,140,0,0.2); transform: scale(1); }
+        }
+
+        .medal-card.locked { opacity: 0.15; filter: grayscale(1); }
+
+        .history-item { background: var(--card); border: 1px solid #eee; border-radius: 18px; padding: 15px; margin-top: 10px; border-left: 5px solid var(--secondary); font-size: 13px; }
+        .cookie-box { display: flex; align-items: flex-start; gap: 10px; background: #FFF9E6; padding: 15px; border-radius: 15px; border: 1px solid var(--secondary); margin-top: 15px; text-align: left; }
+        body.dark-mode .cookie-box { background: #333; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [tab, setTab] = useState('inicio');
+            const [goals, setGoals] = useState(() => JSON.parse(localStorage.getItem('metas_v31')) || [{ id: 1, title: 'Mi Meta', date: new Date().toISOString().split('T')[0], time: '00:00', why: '', history: [] }]);
+            const [activeIdx, setActiveIdx] = useState(0);
+            const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user_v31')) || { name: '', surname: '', age: '', birth: '', avatar: '😊', eName: '', ePhone: '', cookies: false, darkMode: false });
+            const [time, setTime] = useState({y:0, mo:0, d:0, h:0, m:0, s:0});
+            const [toastMsg, setToastMsg] = useState("");
+
+            const current = goals[activeIdx] || null;
+
+            const medalList = [
+                {l:'1 Sem.', d:7, i:'🥉', n:'BRONCE'}, {l:'1 Mes', d:30, i:'🥈', n:'PLATA'}, 
+                {l:'2 Meses', d:60, i:'🥇', n:'ORO'}, {l:'6 Meses', d:180, i:'💎', n:'DIAMANTE'},
+                {l:'1 Año', d:365, i:'🏆', n:'MAESTRO'}, {l:'2 Años', d:730, i:'👑', n:'REALEZA'},
+                {l:'5 Años', d:1825, i:'🌈', n:'LEYENDA'}, {l:'10 Años', d:3650, i:'🚀', n:'COHETE'}
+            ];
+
+            const celebrarLogro = () => {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF8C00', '#FFD700', '#FFFFFF'] });
+                const diff = new Date() - new Date(`${current.date}T${current.time}`);
+                const days = Math.floor(diff / 86400000);
+                const ganadas = medalList.filter(m => days >= m.d);
+                const mejor = ganadas.length > 0 ? ganadas[ganadas.length - 1] : null;
+                
+                setToastMsg(mejor ? `¡NUEVO LOGRO DE ${mejor.n}! ${mejor.i}` : "¡SIGUE ASÍ, VAS POR BUEN CAMINO! 🚀");
+                setTimeout(() => setToastMsg(""), 3500);
+            };
+
+            // Efecto para el Modo Oscuro
+            useEffect(() => {
+                if (user.darkMode) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }, [user.darkMode]);
+
+            useEffect(() => {
+                if (tab === 'logros' && current) celebrarLogro();
+            }, [tab]);
+
+            useEffect(() => {
+                localStorage.setItem('metas_v31', JSON.stringify(goals));
+                localStorage.setItem('user_v31', JSON.stringify(user));
+            }, [goals, user]);
+
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    if (!current) return;
+                    const diff = new Date() - new Date(`${current.date}T${current.time}`);
+                    if (diff > 0) {
+                        setTime({
+                            y: Math.floor(diff / 31536000000),
+                            mo: Math.floor((diff % 31536000000) / 2628000000),
+                            d: Math.floor((diff % 2628000000) / 86400000),
+                            h: Math.floor((diff % 86400000) / 3600000),
+                            m: Math.floor((diff % 3600000) / 60000),
+                            s: Math.floor((diff % 60000) / 1000)
+                        });
+                    }
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [current]);
+
+            const avatars = ['😊','😎','🦁','🚀','💎','🔥','👑','💪','✨','🌟','🍀','🦄','🐼','🦊','🐱','🐶','🐸','🐯','🐲','🍎','🍕','🎸','🎨','🎮','🏀','🧘','🧗','🏄','🏊','🏋️','🏃','🚶','👫','🧑‍💻','👨‍🎨','👩‍🚀','👵','👴','👨','👩','👧','👦','👶','🧚','🧞','🧟','🧞','🧚','🧜','🧙','🥷','🧑‍🌾','🧑‍🍳','🧑‍🎓','🧑‍🎤','🧑‍🏫'];
+
+            // Lógica para medalla siguiente
+            const getNextMedalInfo = () => {
+                if (!current) return null;
+                const diff = new Date() - new Date(`${current.date}T${current.time}`);
+                const days = Math.floor(diff / 86400000);
+                const next = medalList.find(m => m.d > days);
+                if (!next) return "¡Has alcanzado el nivel máximo! 🚀";
+                return `Próxima medalla: ${next.n} en ${next.d - days} días.`;
+            };
+
+            return (
+                <div className="safe-area">
+                    {toastMsg && <div className="floating-toast">{toastMsg}</div>}
+                    <header className="header"><h1>🚀 METAS 🚀</h1></header>
+
+                    {tab === 'inicio' && current && (
+                        <div>
+                            <div className="goal-selector">
+                                {goals.map((g, i) => <button key={g.id} className={`goal-chip ${activeIdx===i?'active':''}`} onClick={()=>setActiveIdx(i)}>{g.title}</button>)}
+                                <button className="goal-chip" onClick={() => setGoals([...goals, {id:Date.now(), title:'Nueva Meta', date:new Date().toISOString().split('T')[0], time:'00:00', history:[]}])}>+ Añadir</button>
+                            </div>
+                            <div className="card">
+                                <input value={current.title} onChange={e => {const u=[...goals]; u[activeIdx].title=e.target.value; setGoals(u)}} placeholder="¿Cuál es tu meta?" />
+                                <div style={{display:'flex', gap:10}}><input type="date" value={current.date} onChange={e=>{const u=[...goals]; u[activeIdx].date=e.target.value; setGoals(u)}}/><input type="time" value={current.time} onChange={e=>{const u=[...goals]; u[activeIdx].time=e.target.value; setGoals(u)}}/></div>
+                                {['Años','Meses','Días','Horas','Minutos','Segundos'].map((l, i) => (
+                                    <div className="bar-container" key={l}>
+                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:13, fontWeight:800}}><span>{l}</span><span>{Object.values(time)[i]}</span></div>
+                                        <div className="bar-bg"><div className="bar-fill" style={{width:`${(Object.values(time)[i]/60)*100}%`}}></div></div>
+                                    </div>
+                                ))}
+                                <textarea placeholder="Motivos para este objetivo..." value={current.why} onChange={e=>{const u=[...goals]; u[activeIdx].why=e.target.value; setGoals(u)}} rows="3"></textarea>
+                                <div className="btn-group">
+                                    <button className="btn btn-reset" onClick={() => {
+                                        const now = new Date();
+                                        const start = new Date(`${current.date}T${current.time}`);
+                                        const diff = now - start;
+                                        const days = Math.floor(diff / 86400000);
+                                        const u = [...goals];
+                                        u[activeIdx].history = [{ id: Date.now(), start: start.toLocaleString(), end: now.toLocaleString(), duration: `${days}d` }, ...(u[activeIdx].history || [])];
+                                        u[activeIdx].date = now.toISOString().split('T')[0];
+                                        u[activeIdx].time = now.toTimeString().split(' ')[0].substring(0,5);
+                                        setGoals(u);
+                                        alert("¡Nueva oportunidad! No te rindas. 🚀");
+                                    }}>REINICIAR</button>
+                                    <button className="btn btn-danger" onClick={() => {if(confirm("¿Eliminar?")) setGoals(goals.filter((_,i)=>i!==activeIdx)); setActiveIdx(0);}}>ELIMINAR</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'logros' && current && (
+                        <div>
+                            <div className="next-medal-info">{getNextMedalInfo()}</div>
+                            <div className="card">
+                                <h3>Medallas: {current.title}</h3>
+                                <div className="medal-grid">
+                                    {medalList.map(m => {
+                                        const diff = new Date() - new Date(`${current.date}T${current.time}`);
+                                        const d = Math.floor(diff / 86400000);
+                                        return <div className={`medal-card ${d>=m.d?'won':'locked'}`} key={m.l}>
+                                            <div style={{fontSize:40}}>{m.i}</div>
+                                            <div style={{fontWeight:800, fontSize:12}}>{m.l}</div>
+                                        </div>
+                                    })}
+                                </div>
+                            </div>
+                            <div className="card">
+                                <h3>Historial de Intentos</h3>
+                                {current.history?.map((h, idx) => (
+                                    <div className="history-item" key={h.id}>
+                                        <div style={{display:'flex', justifyContent:'space-between'}}><strong>{idx+1}º Intento</strong> <span style={{color:'var(--primary)', fontWeight:900}}>{h.duration}</span></div>
+                                        <div style={{fontSize:11, color:'#888', marginTop:5}}>{h.start} → {h.end}</div>
+                                        <div style={{marginTop:8, display:'flex', gap:10}}>
+                                            <button style={{color:'var(--primary)', border:'none', background:'none', fontWeight:700}} onClick={()=>{const n=prompt("Modificar duración:", h.duration); if(n){const u=[...goals]; u[activeIdx].history=u[activeIdx].history.map(x=>x.id===h.id?{...x, duration:n}:x); setGoals(u)}}}>Editar</button>
+                                            <button style={{color:'var(--danger)', border:'none', background:'none', fontWeight:700}} onClick={()=>{if(confirm("¿Borrar?")){const u=[...goals]; u[activeIdx].history=u[activeIdx].history.filter(x=>x.id!==h.id); setGoals(u)}}}>Borrar</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {tab === 'motivacion' && (
+                        <div>
+                            <div className="card" style={{background:'#FFF4D1'}}><h3>Mi Razón:</h3><p style={{color:'#5D4037'}}>"{current?.why || "¡Tú puedes!"}"</p></div>
+                            <div className="card" style={{borderLeft:'5px solid var(--primary)'}}><p style={{fontWeight:700, margin:0}}>¡Eres un cohete! No te detengas. 🚀</p></div>
+                            <div className="card" style={{borderLeft:'5px solid var(--primary)'}}><p style={{fontWeight:700, margin:0}}>Cada segundo cuenta para tu éxito. ✨</p></div>
+                            <div className="card" style={{borderLeft:'5px solid var(--primary)'}}><p style={{fontWeight:700, margin:0}}>Tu esfuerzo de hoy es tu orgullo de mañana. 💪</p></div>
+                        </div>
+                    )}
+
+                    {tab === 'config' && (
+                        <div className="card" style={{textAlign:'center'}}>
+                            <div style={{fontSize:60, background:'#FFF9E6', width:100, height:100, lineHeight:'100px', borderRadius:'50%', display:'inline-block', border:'2px solid var(--secondary)', marginBottom:15}}>{user.avatar}</div>
+                            
+                            {/* Botón de Oscuridad */}
+                            <button className="btn" style={{background: user.darkMode ? '#555' : '#333', marginBottom: 20, display: 'block', width: '100%'}} 
+                                onClick={() => setUser({...user, darkMode: !user.darkMode})}>
+                                {user.darkMode ? '☀️ MODO CLARO' : '🌙 MODO OSCURO'}
+                            </button>
+
+                            <input placeholder="Nombre" value={user.name} onChange={e=>setUser({...user, name:e.target.value})}/>
+                            <input placeholder="Apellidos" value={user.surname} onChange={e=>setUser({...user, surname:e.target.value})}/>
+                            <div style={{display:'flex', gap:10}}><input placeholder="Edad" type="number" value={user.age} onChange={e=>setUser({...user, age:e.target.value})}/><input type="date" value={user.birth} onChange={e=>setUser({...user, birth:e.target.value})}/></div>
+                            <div className="avatar-grid">{avatars.map(a => <button key={a} className={`avatar-btn ${user.avatar === a ? 'selected' : ''}`} onClick={()=>setUser({...user, avatar:a})}>{a}</button>)}</div>
+                            <input placeholder="Nombre de Emergencia" value={user.eName} onChange={e=>setUser({...user, eName:e.target.value})}/>
+                            <input placeholder="Teléfono de Emergencia" value={user.ePhone} onChange={e=>setUser({...user, ePhone:e.target.value})}/>
+                            <div className="cookie-box">
+                                <input type="checkbox" style={{width:'auto'}} checked={user.cookies} onChange={e=>setUser({...user, cookies:e.target.checked})}/>
+                                <div style={{fontSize:11}}>Acepto que mis datos se guarden localmente en este dispositivo de forma segura.</div>
+                            </div>
+                        </div>
+                    )}
+
+                    <nav className="tab-bar">
+                        <button className={`tab-item ${tab==='inicio'?'active':''}`} onClick={()=>setTab('inicio')}>Inicio</button>
+                        <button className={`tab-item ${tab==='logros'?'active':''}`} onClick={()=>setTab('logros')}>Logros</button>
+                        <button className={`tab-item ${tab==='motivacion'?'active':''}`} onClick={()=>setTab('motivacion')}>Motivación</button>
+                        <button className={`tab-item ${tab==='config'?'active':''}`} onClick={()=>setTab('config')}>Perfil</button>
+                    </nav>
+                </div>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
